@@ -1,3 +1,6 @@
+@extends('layouts.app')
+
+@section('content')
 <!-- resources/views/menus/show.blade.php -->
 <!DOCTYPE html>
 <html lang="en">
@@ -378,3 +381,4 @@
     </script>
 </body>
 </html>
+@endsection
