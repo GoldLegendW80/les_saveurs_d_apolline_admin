@@ -7,11 +7,6 @@ use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
-    /**
-     * Display a listing of the menus.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         $menus = Menu::all();
@@ -31,11 +26,6 @@ class MenuController extends Controller
         return response()->json(['success' => true, 'menu' => $menu]);
     }
 
-    /**
-     * Display the specified menu.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function show(Menu $menu)
     {
         $menu->load('categories.items');
@@ -57,9 +47,13 @@ class MenuController extends Controller
 
     public function destroy(Menu $menu)
     {
-        $menu->delete();
+        try {
+            $menu->delete();
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error deleting menu'], 500);
+        }
     }
 
     public function reorder(Request $request)
