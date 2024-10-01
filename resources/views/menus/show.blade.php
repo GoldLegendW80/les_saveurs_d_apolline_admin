@@ -1,71 +1,93 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- resources/views/menus/show.blade.php -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $menu->name }} - Menu Details</title>
+    <title>{{ $menu->name }} - Détails du Menu</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     <style>
-        #toaster {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 9999;
+        .modal { transition: opacity 0.25s ease; }
+        body.modal-active { overflow-x: hidden; overflow-y: visible !important; }
+        #toaster { position: fixed; top: 1rem; right: 1rem; z-index: 9999; }
+        .drag-handle { cursor: move; }
+        .draggable { 
+            transition: all 0.3s ease; 
+            cursor: move;
         }
+        .draggable:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+        }
+        .sortable-ghost { opacity: 0.5; }
+        .btn { transition: all 0.3s ease; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-6">
-        <a href="{{ route('menus.index') }}" class="text-blue-500 hover:text-blue-700 mb-4 inline-block">&larr; Back to Menu List</a>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-6 sm:p-10">
+        <a href="{{ route('menus.index') }}" class="text-blue-600 hover:text-blue-800 mb-6 inline-block">&larr; Retour à la Liste des Menus</a>
         
-        <h1 class="text-3xl font-bold mb-6">{{ $menu->name }}</h1>
-        <p class="mb-6">{{ $menu->description }}</p>
+        <h1 class="text-4xl font-bold mb-6 text-gray-800">{{ $menu->name }}</h1>
+        <p class="mb-8 text-gray-600">{{ $menu->description }}</p>
 
-        <button id="addCategoryBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4">
-            Add Category
+        <button id="addCategoryBtn" class="btn bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md mb-8">
+            Ajouter une Catégorie
         </button>
 
-        <div id="categoriesList" class="space-y-4">
+        <div id="categoriesList" class="space-y-6">
             @foreach($menu->categories->sortBy('order') as $category)
-                <div class="bg-white shadow-md rounded px-8 py-6" data-category-id="{{ $category->id }}">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold">{{ $category->name }}</h3>
-                        <div>
-                            <button onclick="openEditCategoryModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}')" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2">
-                                Edit
+                <div class="bg-white shadow-lg rounded-lg p-6 draggable" data-category-id="{{ $category->id }}">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <span class="drag-handle mr-3 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </span>
+                            <h3 class="text-2xl font-bold text-gray-800">{{ $category->name }}</h3>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="openEditCategoryModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}')" class="btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md">
+                                Modifier
                             </button>
-                            <button onclick="deleteCategory({{ $category->id }})" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-                                Delete
+                            <button onclick="deleteCategory({{ $category->id }})" class="btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md">
+                                Supprimer
                             </button>
                         </div>
                     </div>
-                    <p class="mb-4">{{ $category->description }}</p>
+                    <p class="mb-6 text-gray-600">{{ $category->description }}</p>
                     
-                    <button onclick="openAddItemModal({{ $category->id }})" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4">
-                        Add Item
+                    <button onclick="openAddItemModal({{ $category->id }})" class="btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md mb-6">
+                        Ajouter un Article
                     </button>
 
-                    <h4 class="text-lg font-semibold mb-2">Items:</h4>
-                    <ul class="list-none pl-0 itemsList" data-category-id="{{ $category->id }}">
+                    <h4 class="text-xl font-semibold mb-4 text-gray-700">Articles:</h4>
+                    <ul class="space-y-3 itemsList" data-category-id="{{ $category->id }}">
                         @foreach($category->items->sortBy('order') as $item)
-                            <li data-item-id="{{ $item->id }}" class="mb-2 p-2 bg-gray-100 rounded flex justify-between items-center">
-                                <div>
-                                    <span class="font-medium">{{ $item->name }}</span> - 
-                                    {{ $item->description }} 
-                                    <span class="font-semibold">${{ number_format($item->price, 2) }}</span>
+                            <li data-item-id="{{ $item->id }}" class="bg-gray-50 rounded-lg p-4 flex items-center justify-between draggable">
+                                <div class="flex items-center flex-grow">
+                                    <span class="drag-handle mr-3 text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <span class="font-medium text-gray-800">{{ $item->name }}</span>
+                                        <p class="text-sm text-gray-600">{{ $item->description }}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <button onclick="openEditItemModal({{ $item->id }}, '{{ $item->name }}', '{{ $item->description }}', {{ $item->price }}, {{ $category->id }})" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2">
-                                        Edit
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-semibold text-gray-800">{{ number_format($item->price, 2) }}€</span>
+                                    <button onclick="openEditItemModal({{ $item->id }}, '{{ $item->name }}', '{{ $item->description }}', {{ $item->price }}, {{ $category->id }})" class="btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-2 rounded-md">
+                                        Modifier
                                     </button>
-                                    <button onclick="deleteItem({{ $item->id }})" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-                                        Delete
+                                    <button onclick="deleteItem({{ $item->id }})" class="btn bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-md">
+                                        Supprimer
                                     </button>
                                 </div>
                             </li>
@@ -87,7 +109,7 @@
                 <form id="editCategoryForm" class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <input type="hidden" id="editCategoryId" name="id">
                     <div class="mb-4">
-                        <label for="editCategoryName" class="block text-gray-700 text-sm font-bold mb-2">Category Name</label>
+                        <label for="editCategoryName" class="block text-gray-700 text-sm font-bold mb-2">Nom de la Catégorie</label>
                         <input type="text" id="editCategoryName" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     </div>
                     <div class="mb-4">
@@ -96,10 +118,10 @@
                     </div>
                     <div class="flex items-center justify-between">
                         <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Update Category
+                            Mettre à jour la Catégorie
                         </button>
                         <button type="button" onclick="closeEditCategoryModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Cancel
+                            Annuler
                         </button>
                     </div>
                 </form>
@@ -119,7 +141,7 @@
                     <input type="hidden" id="itemId" name="id">
                     <input type="hidden" id="itemCategoryId" name="category_id">
                     <div class="mb-4">
-                        <label for="itemName" class="block text-gray-700 text-sm font-bold mb-2">Item Name</label>
+                        <label for="itemName" class="block text-gray-700 text-sm font-bold mb-2">Nom de l'Article</label>
                         <input type="text" id="itemName" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                     </div>
                     <div class="mb-4">
@@ -127,15 +149,15 @@
                         <textarea id="itemDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"></textarea>
                     </div>
                     <div class="mb-4">
-                        <label for="itemPrice" class="block text-gray-700 text-sm font-bold mb-2">Price</label>
+                        <label for="itemPrice" class="block text-gray-700 text-sm font-bold mb-2">Prix</label>
                         <input type="number" id="itemPrice" name="price" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                     </div>
                     <div class="flex items-center justify-between">
                         <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Save Item
+                            Enregistrer l'Article
                         </button>
                         <button type="button" onclick="closeItemModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                            Cancel
+                            Annuler
                         </button>
                     </div>
                 </form>
@@ -147,11 +169,10 @@
     <div id="toaster"></div>
 
     <script>
-        // Toaster function
         function showToast(message, type = 'success') {
             const toaster = document.getElementById('toaster');
             const toast = document.createElement('div');
-            toast.className = `${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-4 py-2 rounded shadow-lg mb-2`;
+            toast.className = `${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-4 rounded-lg shadow-lg mb-4`;
             toast.textContent = message;
             toaster.appendChild(toast);
             setTimeout(() => {
@@ -159,19 +180,20 @@
             }, 3000);
         }
 
-        // Enable drag-and-drop for categories
         new Sortable(document.getElementById('categoriesList'), {
             animation: 150,
-            handle: '.bg-white',
+            draggable: '.draggable',
+            handle: '.draggable',
             onEnd: function() {
                 updateCategoryOrder();
             }
         });
 
-        // Enable drag-and-drop for items within each category
         document.querySelectorAll('.itemsList').forEach(function(el) {
             new Sortable(el, {
                 animation: 150,
+                draggable: '.draggable',
+                handle: '.draggable',
                 onEnd: function() {
                     updateItemOrder(el.getAttribute('data-category-id'));
                 }
@@ -196,11 +218,11 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                showToast('Categories reordered successfully');
+                showToast('Catégories réorganisées avec succès');
             })
             .catch((error) => {
-                console.error('Error:', error);
-                showToast('Error reordering categories', 'error');
+                console.error('Erreur:', error);
+                showToast('Erreur lors de la réorganisation des catégories', 'error');
             });
         }
 
@@ -210,7 +232,6 @@
                 id: item.getAttribute('data-item-id'),
                 order: index
             }));
-
             fetch(`/items/reorder/${categoryId}`, {
                 method: 'POST',
                 headers: {
@@ -222,11 +243,11 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                showToast('Items reordered successfully');
+                showToast('Articles réorganisés avec succès');
             })
             .catch((error) => {
-                console.error('Error:', error);
-                showToast('Error reordering items', 'error');
+                console.error('Erreur:', error);
+                showToast('Erreur lors de la réorganisation des articles', 'error');
             });
         }
 
@@ -256,17 +277,17 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showToast('Category updated successfully');
+                    showToast('Catégorie mise à jour avec succès');
                     closeEditCategoryModal();
-                    location.reload(); // Reload the page to show the updated category
+                    location.reload();
                 } else {
-                    showToast('Error updating category', 'error');
+                    showToast('Erreur lors de la mise à jour de la catégorie', 'error');
                 }
             });
         });
 
         document.getElementById('addCategoryBtn').addEventListener('click', function() {
-            let categoryName = prompt("Enter the name for the new category:");
+            let categoryName = prompt("Entrez le nom de la nouvelle catégorie:");
             if (categoryName) {
                 let formData = new FormData();
                 formData.append('name', categoryName);
@@ -282,17 +303,17 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showToast('Category added successfully');
-                        location.reload(); // Reload the page to show the new category
+                        showToast('Catégorie ajoutée avec succès');
+                        location.reload();
                     } else {
-                        showToast('Error creating category', 'error');
+                        showToast('Erreur lors de la création de la catégorie', 'error');
                     }
                 });
             }
         });
 
         function deleteCategory(categoryId) {
-            if (confirm('Are you sure you want to delete this category? This will also delete all items in this category.')) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ? Cela supprimera également tous les articles de cette catégorie.')) {
                 fetch(`/categories/${categoryId}`, {
                     method: 'DELETE',
                     headers: {
@@ -302,10 +323,10 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showToast('Category deleted successfully');
-                        location.reload(); // Reload the page to reflect the deletion
+                        showToast('Catégorie supprimée avec succès');
+                        location.reload();
                     } else {
-                        showToast('Error deleting category', 'error');
+                        showToast('Erreur lors de la suppression de la catégorie', 'error');
                     }
                 });
             }
@@ -350,17 +371,17 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showToast(itemId ? 'Item updated successfully' : 'Item added successfully');
+                    showToast(itemId ? 'Article mis à jour avec succès' : 'Article ajouté avec succès');
                     closeItemModal();
-                    location.reload(); // Reload the page to show the new/updated item
+                    location.reload();
                 } else {
-                    showToast(itemId ? 'Error updating item' : 'Error creating item', 'error');
+                    showToast(itemId ? 'Erreur lors de la mise à jour de l\'article' : 'Erreur lors de la création de l\'article', 'error');
                 }
             });
         });
 
         function deleteItem(itemId) {
-            if (confirm('Are you sure you want to delete this item?')) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
                 fetch(`/items/${itemId}`, {
                     method: 'DELETE',
                     headers: {
@@ -370,12 +391,22 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showToast('Item deleted successfully');
-                        location.reload(); // Reload the page to reflect the deletion
+                        showToast('Article supprimé avec succès');
+                        location.reload();
                     } else {
-                        showToast('Error deleting item', 'error');
+                        showToast('Erreur lors de la suppression de l\'article', 'error');
                     }
                 });
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('editCategoryModal')) {
+                closeEditCategoryModal();
+            }
+            if (event.target == document.getElementById('itemModal')) {
+                closeItemModal();
             }
         }
     </script>
