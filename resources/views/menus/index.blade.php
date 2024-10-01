@@ -17,8 +17,17 @@
         .menu-item { transition: all 0.3s ease; cursor: move; }
         .menu-item:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
         .sortable-ghost { opacity: 0.5; }
-        .btn { transition: all 0.3s ease; }
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .btn { 
+            transition: all 0.3s ease;
+            @apply font-bold py-2 px-4 rounded-md shadow-md;
+        }
+        .btn:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+        }
+        .btn-sm {
+            @apply py-1 px-2 text-sm;
+        }
         .drag-icon { cursor: move; }
     </style>
 </head>
@@ -26,21 +35,21 @@
     <div class="container mx-auto p-6 sm:p-10">
         <h1 class="text-3xl sm:text-4xl font-bold mb-8 text-gray-800">Liste des Menus</h1>
         <div class="mb-6">
-            <button id="addMenuBtn" class="btn bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md">
-                Créer un Nouveau Menu
-            </button>
+        <button id="addMenuBtn" class="w-full sm:w-auto btn bg-green-500 hover:bg-green-600 text-white">
+            Créer un Nouveau Menu
+        </button>
         </div>
 
-        <div class="bg-white shadow-lg rounded-lg px-8 py-6">
+        <div class="bg-white shadow-md rounded-lg px-4 sm:px-6 py-6">
             @if($menus->isEmpty())
                 <p class="text-gray-600">Aucun menu disponible.</p>
             @else
                 <p class="mb-4 text-sm text-gray-600">Glissez et déposez pour réorganiser les menus</p>
                 <ul id="menuList" class="space-y-4">
                     @foreach($menus->sortBy('order') as $menu)
-                    <li data-id="{{ $menu->id }}" class="menu-item bg-gray-50 p-5 rounded-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center flex-grow">
+                    <li data-id="{{ $menu->id }}" class="menu-item bg-gray-50 p-4 rounded-lg">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div class="flex items-center mb-2 sm:mb-0">
                                 <span class="drag-icon mr-3 text-gray-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -50,11 +59,11 @@
                                     {{ $menu->name }}
                                 </a>
                             </div>
-                            <div class="flex space-x-3">
-                                <button type="button" class="btn edit-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md" data-id="{{ $menu->id }}" data-name="{{ $menu->name }}" data-description="{{ $menu->description }}">
+                            <div class="flex space-x-2 mt-2 sm:mt-0">
+                                <button type="button" class="btn btn-sm edit-btn bg-yellow-500 hover:bg-yellow-600 text-white" data-id="{{ $menu->id }}" data-name="{{ $menu->name }}" data-description="{{ $menu->description }}">
                                     Modifier
                                 </button>
-                                <button type="button" class="btn delete-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md" data-id="{{ $menu->id }}">
+                                <button type="button" class="btn btn-sm delete-btn bg-red-500 hover:bg-red-600 text-white" data-id="{{ $menu->id }}">
                                     Supprimer
                                 </button>
                             </div>
@@ -68,31 +77,31 @@
 
     <!-- Add/Edit Menu Modal -->
     <div id="menuModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-8 border w-full max-w-md sm:w-96 shadow-lg rounded-lg bg-white">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-semibold text-gray-900" id="modalTitle">Ajouter un Menu</h3>
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900" id="modalTitle">Ajouter un Menu</h3>
                 <button id="closeModal" class="text-gray-400 hover:text-gray-500">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            <form id="menuForm" class="mt-4">
+            <form id="menuForm" class="mt-2">
                 <input type="hidden" id="menuId" name="id">
-                <div class="mb-6">
+                <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="menuName">
                         Nom du Menu
                     </label>
-                    <input class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="menuName" type="text" name="name" required>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="menuName" type="text" name="name" required>
                 </div>
-                <div class="mb-6">
+                <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="menuDescription">
                         Description
                     </label>
-                    <textarea class="shadow appearance-none border rounded-md w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="menuDescription" name="description" rows="4"></textarea>
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="menuDescription" name="description"></textarea>
                 </div>
-                <div class="flex items-center justify-end">
-                    <button id="saveMenuBtn" class="btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-md" type="submit">
+                <div class="flex justify-end">
+                    <button id="saveMenuBtn" class="btn bg-blue-500 hover:bg-blue-700 text-white" type="submit">
                         Enregistrer
                     </button>
                 </div>

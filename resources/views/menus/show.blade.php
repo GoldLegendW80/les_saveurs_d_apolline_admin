@@ -24,69 +24,78 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
         }
         .sortable-ghost { opacity: 0.5; }
-        .btn { transition: all 0.3s ease; }
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .btn { 
+            transition: all 0.3s ease;
+            @apply font-bold py-2 px-4 rounded-lg shadow-md;
+        }
+        .btn:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+        }
+        .btn-sm {
+            @apply py-1 px-2 text-sm;
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
-    <div class="container mx-auto p-6 sm:p-10">
-        <a href="{{ route('menus.index') }}" class="text-blue-600 hover:text-blue-800 mb-6 inline-block">&larr; Retour à la Liste des Menus</a>
+    <div class="container mx-auto p-4 sm:p-6">
+        <a href="{{ route('menus.index') }}" class="text-blue-600 hover:text-blue-800 mb-4 inline-block">&larr; Retour à la Liste des Menus</a>
         
-        <h1 class="text-4xl font-bold mb-6 text-gray-800">{{ $menu->name }}</h1>
-        <p class="mb-8 text-gray-600">{{ $menu->description }}</p>
+        <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-gray-800">{{ $menu->name }}</h1>
+        <p class="mb-6 text-gray-600">{{ $menu->description }}</p>
 
-        <button id="addCategoryBtn" class="btn bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md mb-8">
+        <button id="addCategoryBtn" class="w-full sm:w-auto btn bg-green-500 hover:bg-green-600 text-white mb-6">
             Ajouter une Catégorie
         </button>
 
-        <div id="categoriesList" class="space-y-6">
+        <div id="categoriesList" class="space-y-4">
             @foreach($menu->categories->sortBy('order') as $category)
-                <div class="bg-white shadow-lg rounded-lg p-6 draggable" data-category-id="{{ $category->id }}">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center">
-                            <span class="drag-handle mr-3 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="bg-white shadow-md rounded-lg p-4 draggable" data-category-id="{{ $category->id }}">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+                        <div class="flex items-center mb-2 sm:mb-0">
+                            <span class="drag-handle mr-2 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
                             </span>
-                            <h3 class="text-2xl font-bold text-gray-800">{{ $category->name }}</h3>
+                            <h3 class="text-xl font-bold text-gray-800">{{ $category->name }}</h3>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="openEditCategoryModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}')" class="btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md">
+                            <button onclick="openEditCategoryModal({{ $category->id }}, '{{ $category->name }}', '{{ $category->description }}')" class="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white">
                                 Modifier
                             </button>
-                            <button onclick="deleteCategory({{ $category->id }})" class="btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md">
+                            <button onclick="deleteCategory({{ $category->id }})" class="btn btn-sm bg-red-500 hover:bg-red-600 text-white">
                                 Supprimer
                             </button>
                         </div>
                     </div>
-                    <p class="mb-6 text-gray-600">{{ $category->description }}</p>
+                    <p class="mb-4 text-gray-600 text-sm">{{ $category->description }}</p>
                     
-                    <button onclick="openAddItemModal({{ $category->id }})" class="btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md mb-6">
+                    <button onclick="openAddItemModal({{ $category->id }})" class="w-full sm:w-auto btn bg-blue-500 hover:bg-blue-600 text-white mb-4">
                         Ajouter un Article
                     </button>
 
-                    <h4 class="text-xl font-semibold mb-4 text-gray-700">Articles:</h4>
-                    <ul class="space-y-3 itemsList" data-category-id="{{ $category->id }}">
+                    <h4 class="text-lg font-semibold mb-2 text-gray-700">Articles:</h4>
+                    <ul class="space-y-2 itemsList" data-category-id="{{ $category->id }}">
                         @foreach($category->items->sortBy('order') as $item)
-                            <li data-item-id="{{ $item->id }}" class="bg-gray-50 rounded-lg p-4 flex items-center justify-between draggable">
-                                <div class="flex items-center flex-grow">
-                                    <span class="drag-handle mr-3 text-gray-400">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <li data-item-id="{{ $item->id }}" class="bg-gray-50 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between draggable">
+                                <div class="flex items-center mb-2 sm:mb-0">
+                                    <span class="drag-handle mr-2 text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                         </svg>
                                     </span>
                                     <div>
                                         <span class="font-medium text-gray-800">{{ $item->name }}</span>
-                                        <p class="text-sm text-gray-600">{{ $item->description }}</p>
+                                        <p class="text-xs text-gray-600">{{ $item->description }}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="font-semibold text-gray-800">{{ number_format($item->price, 2) }}€</span>
-                                    <button onclick="openEditItemModal({{ $item->id }}, '{{ $item->name }}', '{{ $item->description }}', {{ $item->price }}, {{ $category->id }})" class="btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-2 rounded-md">
+                                <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                                    <span class="font-semibold text-gray-800 text-sm">{{ number_format($item->price, 2) }}€</span>
+                                    <button onclick="openEditItemModal({{ $item->id }}, '{{ $item->name }}', '{{ $item->description }}', {{ $item->price }}, {{ $category->id }})" class="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white">
                                         Modifier
                                     </button>
-                                    <button onclick="deleteItem({{ $item->id }})" class="btn bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-md">
+                                    <button onclick="deleteItem({{ $item->id }})" class="btn btn-sm bg-red-500 hover:bg-red-600 text-white">
                                         Supprimer
                                     </button>
                                 </div>
@@ -95,6 +104,36 @@
                     </ul>
                 </div>
             @endforeach
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div id="addCategoryModal" class="fixed z-10 inset-0 overflow-y-auto hidden">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form id="addCategoryForm" class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="mb-4">
+                        <label for="newCategoryName" class="block text-gray-700 text-sm font-bold mb-2">Nom de la Catégorie</label>
+                        <input type="text" id="newCategoryName" name="name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="newCategoryDescription" class="block text-gray-700 text-sm font-bold mb-2">Description</label>
+                        <textarea id="newCategoryDescription" name="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Ajouter la Catégorie
+                        </button>
+                        <button type="button" onclick="closeAddCategoryModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -249,6 +288,14 @@
                 console.error('Erreur:', error);
                 showToast('Erreur lors de la réorganisation des articles', 'error');
             });
+        }
+
+        function openAddCategoryModal() {
+            document.getElementById('addCategoryModal').classList.remove('hidden');
+        }
+
+        function closeAddCategoryModal() {
+            document.getElementById('addCategoryModal').classList.add('hidden');
         }
 
         function openEditCategoryModal(id, name, description) {
