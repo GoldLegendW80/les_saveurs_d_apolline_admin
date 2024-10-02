@@ -50,7 +50,7 @@
 
         <div id="categoriesList" class="space-y-4">
             @foreach($menu->categories->sortBy('order') as $category)
-                <div class="bg-white shadow-md rounded-lg p-4 draggable" data-category-id="{{ $category->id }}">
+                <div class="bg-white shadow-md rounded-lg p-4 draggable" data-category-id="{{ $category->id }}" data-name="{{ $category->name }}" data-description="{{ $category->description }}">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
                         <div class="flex items-center mb-2 sm:mb-0">
                             <span class="drag-handle mr-2 text-gray-400">
@@ -78,7 +78,7 @@
                     <h4 class="text-lg font-semibold mb-2 text-gray-700">Articles:</h4>
                     <ul class="space-y-2 itemsList" data-category-id="{{ $category->id }}">
                         @foreach($category->items->sortBy('order') as $item)
-                            <li data-item-id="{{ $item->id }}" class="bg-gray-50 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between draggable">
+                            <li data-item-id="{{ $item->id }}" data-name="{{ $item->name }}" data-description="{{ $item->description }}" data-price="{{ $item->price }}" class="bg-gray-50 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between draggable">
                                 <div class="flex items-center mb-2 sm:mb-0">
                                     <span class="drag-handle mr-2 text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -271,6 +271,13 @@
         }
 
         function openEditCategoryModal(id, name, description) {
+            // Get the latest data from the DOM
+            const categoryElement = document.querySelector(`[data-category-id="${id}"]`);
+            if (categoryElement) {
+                name = categoryElement.getAttribute('data-name');
+                description = categoryElement.getAttribute('data-description');
+            }
+            
             document.getElementById('categoryId').value = id;
             document.getElementById('categoryName').value = name;
             document.getElementById('categoryDescription').value = description;
@@ -347,6 +354,14 @@
         }
 
         function openEditItemModal(id, name, description, price) {
+            // Get the latest data from the DOM
+            const itemElement = document.querySelector(`[data-item-id="${id}"]`);
+            if (itemElement) {
+                name = itemElement.getAttribute('data-name');
+                description = itemElement.getAttribute('data-description');
+                price = itemElement.getAttribute('data-price');
+            }
+            
             document.getElementById('itemId').value = id;
             document.getElementById('itemName').value = name;
             document.getElementById('itemDescription').value = description;
@@ -359,41 +374,41 @@
         }
 
         document.getElementById('itemForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                const itemId = formData.get('id');
-                const url = itemId ? `/items/${itemId}` : '/items';
-                const method = itemId ? 'PUT' : 'POST';
+            e.preventDefault();
+            const formData = new FormData(this);
+            const itemId = formData.get('id');
+            const url = itemId ? `/items/${itemId}` : '/items';
+            const method = itemId ? 'PUT' : 'POST';
 
-                fetch(url, {
-                    method: method,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name: formData.get('name'),
-                        description: formData.get('description'),
-                        price: formData.get('price'),
-                        category_id: formData.get('category_id'),
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    closeItemModal();
-                    if (itemId) {
-                        updateItemInDOM(data.item);
-                        showToast('Article mis à jour avec succès');
-                    } else {
-                        addItemToDOM(data.item, data.item.category_id);
-                        showToast('Article créé avec succès');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    showToast('Une erreur est survenue', 'error');
-                });
+            fetch(url, {
+                method: method,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: formData.get('name'),
+                    description: formData.get('description'),
+                    price: formData.get('price'),
+                    category_id: formData.get('category_id'),
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                closeItemModal();
+                if (itemId) {
+                    updateItemInDOM(data.item);
+                    showToast('Article mis à jour avec succès');
+                } else {
+                    addItemToDOM(data.item, data.item.category_id);
+                    showToast('Article créé avec succès');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showToast('Une erreur est survenue', 'error');
             });
+        });
 
         function deleteItem(itemId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
@@ -426,57 +441,67 @@
         }
 
         function addCategoryToDOM(category) {
-        const categoriesList = document.getElementById('categoriesList');
-        const newCategory = document.createElement('div');
-        newCategory.className = 'bg-white shadow-md rounded-lg p-4 draggable';
-        newCategory.setAttribute('data-category-id', category.id);
-        newCategory.innerHTML = `
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
-                <div class="flex items-center mb-2 sm:mb-0">
-                    <span class="drag-handle mr-2 text-gray-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </span>
-                    <h3 class="text-xl font-bold text-gray-800">${category.name}</h3>
+            const categoriesList = document.getElementById('categoriesList');
+            const newCategory = document.createElement('div');
+            newCategory.className = 'bg-white shadow-md rounded-lg p-4 draggable';
+            newCategory.setAttribute('data-category-id', category.id);
+            newCategory.setAttribute('data-name', category.name);
+            newCategory.setAttribute('data-description', category.description);
+            newCategory.innerHTML = `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+                    <div class="flex items-center mb-2 sm:mb-0">
+                        <span class="drag-handle mr-2 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </span>
+                        <h3 class="text-xl font-bold text-gray-800">${category.name}</h3>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="openEditCategoryModal(${category.id}, '${category.name}', '${category.description}')" class="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white">
+                            Modifier
+                        </button>
+                        <button onclick="deleteCategory(${category.id})" class="btn btn-sm bg-red-500 hover:bg-red-600 text-white">
+                            Supprimer
+                        </button>
+                    </div>
                 </div>
-                <div class="flex space-x-2">
-                    <button onclick="openEditCategoryModal(${category.id}, '${category.name}', '${category.description}')" class="btn btn-sm bg-yellow-500 hover:bg-yellow-600 text-white">
-                        Modifier
-                    </button>
-                    <button onclick="deleteCategory(${category.id})" class="btn btn-sm bg-red-500 hover:bg-red-600 text-white">
-                        Supprimer
-                    </button>
-                </div>
-            </div>
-            <p class="mb-4 text-gray-600 text-sm">${category.description}</p>
-            
-            <button onclick="openAddItemModal(${category.id})" class="w-full sm:w-auto btn bg-blue-500 hover:bg-blue-600 text-white mb-4">
-                Ajouter un Article
-            </button>
+                <p class="mb-4 text-gray-600 text-sm">${category.description}</p>
+                
+                <button onclick="openAddItemModal(${category.id})" class="w-full sm:w-auto btn bg-blue-500 hover:bg-blue-600 text-white mb-4">
+                    Ajouter un Article
+                </button>
 
-            <h4 class="text-lg font-semibold mb-2 text-gray-700">Articles:</h4>
-            <ul class="space-y-2 itemsList" data-category-id="${category.id}">
-            </ul>
-        `;
-        categoriesList.appendChild(newCategory);
-        
-        // Initialize Sortable for the new category's items
-        new Sortable(newCategory.querySelector('.itemsList'), {
-            animation: 150,
-            draggable: '.draggable',
-            handle: '.draggable',
-            onEnd: function() {
-                updateItemOrder(category.id);
-            }
-        });
-    }
+                <h4 class="text-lg font-semibold mb-2 text-gray-700">Articles:</h4>
+                <ul class="space-y-2 itemsList" data-category-id="${category.id}">
+                </ul>
+            `;
+            categoriesList.appendChild(newCategory);
+            
+            // Initialize Sortable for the new category's items
+            new Sortable(newCategory.querySelector('.itemsList'), {
+                animation: 150,
+                draggable: '.draggable',
+                handle: '.draggable',
+                onEnd: function() {
+                    updateItemOrder(category.id);
+                }
+            });
+        }
 
     function updateCategoryInDOM(category) {
         const categoryElement = document.querySelector(`[data-category-id="${category.id}"]`);
         if (categoryElement) {
             categoryElement.querySelector('h3').textContent = category.name;
             categoryElement.querySelector('p').textContent = category.description;
+            
+            // Update data attributes
+            categoryElement.setAttribute('data-name', category.name);
+            categoryElement.setAttribute('data-description', category.description);
+            
+            // Update onclick attribute of the edit button
+            const editButton = categoryElement.querySelector('button:nth-child(1)');
+            editButton.setAttribute('onclick', `openEditCategoryModal(${category.id}, '${category.name}', '${category.description}')`);
         }
     }
 
@@ -491,6 +516,9 @@
         const itemsList = document.querySelector(`.itemsList[data-category-id="${categoryId}"]`);
         const newItem = document.createElement('li');
         newItem.setAttribute('data-item-id', item.id);
+        newItem.setAttribute('data-name', item.name);
+        newItem.setAttribute('data-description', item.description);
+        newItem.setAttribute('data-price', item.price);
         newItem.className = 'bg-gray-50 rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between draggable';
         newItem.innerHTML = `
             <div class="flex items-center mb-2 sm:mb-0">
@@ -513,8 +541,8 @@
                     Supprimer
                 </button>
             </div>`;
-            itemsList.appendChild(newItem);
-        }
+        itemsList.appendChild(newItem);
+    }
 
         function updateItemInDOM(item) {
             const itemElement = document.querySelector(`[data-item-id="${item.id}"]`);
@@ -522,6 +550,15 @@
                 itemElement.querySelector('.font-medium').textContent = item.name;
                 itemElement.querySelector('.text-xs').textContent = item.description;
                 itemElement.querySelector('.font-semibold').textContent = `${Number(item.price).toFixed(2)}€`;
+                
+                // Update data attributes
+                itemElement.setAttribute('data-name', item.name);
+                itemElement.setAttribute('data-description', item.description);
+                itemElement.setAttribute('data-price', item.price);
+                
+                // Update onclick attribute of the edit button
+                const editButton = itemElement.querySelector('button:nth-child(2)');
+                editButton.setAttribute('onclick', `openEditItemModal('${item.id}', '${item.name}', '${item.description}', '${item.price}')`);
             }
         }
 

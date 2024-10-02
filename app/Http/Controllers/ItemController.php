@@ -27,7 +27,6 @@ class ItemController extends Controller
             'name' => 'required|max:255',
             'description' => 'nullable',
             'price' => 'required|numeric',
-            'category_id' => 'required|exists:categories,id',
         ]);
 
         $item->update($validatedData);
