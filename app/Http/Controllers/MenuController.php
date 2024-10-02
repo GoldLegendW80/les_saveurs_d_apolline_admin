@@ -21,6 +21,9 @@ class MenuController extends Controller
             'description' => 'nullable',
         ]);
 
+        $maxOrder = Menu::max('order') ?? 0;
+        $validatedData['order'] = $maxOrder + 1;
+
         $menu = Menu::create($validatedData);
 
         return response()->json(['success' => true, 'menu' => $menu]);
