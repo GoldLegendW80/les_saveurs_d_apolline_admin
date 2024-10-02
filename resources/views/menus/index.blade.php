@@ -47,7 +47,7 @@
                 <p class="mb-4 text-sm text-gray-600">Glissez et déposez pour réorganiser les menus</p>
                 <ul id="menuList" class="space-y-4">
                     @foreach($menus->sortBy('order') as $menu)
-                    <li data-id="{{ $menu->id }}" class="menu-item bg-gray-50 p-4 rounded-lg">
+                    <li data-id="{{ $menu->id }}" data-name="{{ $menu->name }}" data-description="{{ $menu->description }}" class="menu-item bg-gray-50 p-4 rounded-lg">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between">
                             <div class="flex items-center mb-2 sm:mb-0">
                                 <span class="drag-icon mr-3 text-gray-400">
@@ -166,6 +166,13 @@
         }
 
         function openEditMenuModal(id, name, description) {
+            // Get the latest data from the DOM
+            const menuItem = document.querySelector(`li[data-id="${id}"]`);
+            if (menuItem) {
+                name = menuItem.getAttribute('data-name');
+                description = menuItem.getAttribute('data-description');
+            }
+            
             document.getElementById('menuId').value = id;
             document.getElementById('menuName').value = name;
             document.getElementById('menuDescription').value = description;
@@ -208,8 +215,16 @@
         function updateMenuInDOM(menu) {
             const menuItem = document.querySelector(`li[data-id="${menu.id}"]`);
             if (menuItem) {
+                // Update the visible text
                 menuItem.querySelector('a').textContent = menu.name;
-                // Update other fields if necessary
+                
+                // Update the data attributes for editing
+                menuItem.setAttribute('data-name', menu.name);
+                menuItem.setAttribute('data-description', menu.description);
+                
+                // Update the onclick attribute of the edit button
+                const editButton = menuItem.querySelector('.edit-btn');
+                editButton.setAttribute('onclick', `openEditMenuModal(${menu.id}, '${menu.name}', '${menu.description}')`);
             }
         }
 
@@ -217,6 +232,8 @@
             const menuList = document.getElementById('menuList');
             const newMenuItem = document.createElement('li');
             newMenuItem.setAttribute('data-id', menu.id);
+            newMenuItem.setAttribute('data-name', menu.name);
+            newMenuItem.setAttribute('data-description', menu.description);
             newMenuItem.className = 'menu-item bg-gray-50 p-4 rounded-lg';
             newMenuItem.innerHTML = `
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between">

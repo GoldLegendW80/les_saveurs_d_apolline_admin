@@ -14,6 +14,20 @@ class MenuController extends Controller
         return view('menus.index', compact('menus'));
     }
 
+    public function getAllMenus()
+    {
+        $menus = Menu::with(['categories' => function ($query) {
+            $query->orderBy('order');
+        }, 'categories.items' => function ($query) {
+            $query->orderBy('order');
+        }])->orderBy('order')->get();
+
+        return response()->json([
+            'success' => true,
+            'menus' => $menus,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
