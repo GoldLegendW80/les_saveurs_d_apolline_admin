@@ -12,7 +12,7 @@ class ItemController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|max:255',
             'description' => 'nullable',
-            'price' => 'required|numeric',
+            'price' => 'nullable|numeric',
             'category_id' => 'required|exists:categories,id',
         ]);
 

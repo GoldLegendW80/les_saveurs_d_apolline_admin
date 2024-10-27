@@ -20,4 +20,9 @@ class Menu extends Model
     {
         return $this->hasMany(Category::class);
     }
+
+    public function formulas()
+    {
+        return $this->hasMany(Formula::class);
+    }
 }

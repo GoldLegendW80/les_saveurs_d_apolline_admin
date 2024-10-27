@@ -9,14 +9,18 @@ class MenuController extends Controller
 {
     public function index()
     {
-        $menus = Menu::all();
+        $menus = Menu::with(['formulas' => function ($query) {
+            $query->orderBy('order');
+        }])->get();
 
         return view('menus.index', compact('menus'));
     }
 
     public function getAllMenus()
     {
-        $menus = Menu::with(['categories' => function ($query) {
+        $menus = Menu::with(['formulas' => function ($query) {
+            $query->orderBy('order');
+        }, 'categories' => function ($query) {
             $query->orderBy('order');
         }, 'categories.items' => function ($query) {
             $query->orderBy('order');

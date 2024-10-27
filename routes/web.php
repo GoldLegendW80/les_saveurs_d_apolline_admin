@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FormulaController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\MenuController;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,12 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/items/{item}', [ItemController::class, 'update'])->name('items.update');
     Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
     Route::post('/items/reorder/{categoryId}', [ItemController::class, 'reorder'])->name('items.reorder');
+
+    // Formula routes
+    Route::post('/formulas', [FormulaController::class, 'store']);
+    Route::put('/formulas/{formula}', [FormulaController::class, 'update']);
+    Route::delete('/formulas/{formula}', [FormulaController::class, 'destroy']);
+    Route::post('/formulas/reorder', [FormulaController::class, 'reorder']);
 });
 
 // Redirect root to login
